@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-29",
+  "policy": "Only publish a vendor code when it has been checked against the exact catalog target below. Never substitute a code from another model, region, song volume, or update edition.",
+  "targets": {
+    "magic": {
+      "brand": "Magic Sing",
+      "model": "E-series",
+      "displayName": "Magic Sing E-series",
+      "status": "selected"
+    },
+    "platinum": {
+      "brand": "Platinum Karaoke",
+      "model": "Piano 4K",
+      "displayName": "Platinum Piano 4K",
+      "status": "selected"
+    },
+    "grand": {
+      "brand": "Grand Videoke",
+      "model": "Symphony 3 Pro Plus",
+      "displayName": "Grand Videoke Symphony 3 Pro Plus",
+      "hardwareModel": "TKR-373MP",
+      "status": "selected"
+    },
+    "tj": {
+      "brand": "TJ Media",
+      "model": null,
+      "displayName": "TJ Media — model not selected",
+      "status": "pending-model"
+    },
+    "kumyoung": {
+      "brand": "Kumyoung",
+      "model": null,
+      "displayName": "Kumyoung — model not selected",
+      "status": "pending-model"
+    },
+    "wow": {
+      "brand": "WOW Fiesta",
+      "model": null,
+      "displayName": "WOW Fiesta — series not selected",
+      "status": "pending-model"
+    }
+  }
+}
