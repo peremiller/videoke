@@ -56,6 +56,28 @@
     chips.prepend(button);
   }
 
+  function openRandomNonAjSong(){
+    if(typeof SONGS === "undefined") return;
+    const eligible = SONGS.filter(song => song.cat !== "originals" && !/aj miller/i.test(song.artist || ""));
+    if(!eligible.length) return;
+    const song = eligible[Math.floor(Math.random() * eligible.length)];
+    pending = song.code;
+    const title = document.getElementById("qTitle");
+    const singer = document.getElementById("singer");
+    const dialog = document.getElementById("queueDlg");
+    if(title) title.textContent = `Reserve ${song.title}`;
+    if(singer) singer.value = "";
+    if(dialog && !dialog.open) dialog.showModal();
+  }
+
+  document.addEventListener("click", event => {
+    const surpriseButton = event.target.closest("[data-random]");
+    if(!surpriseButton) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openRandomNonAjSong();
+  }, true);
+
   function enhance(){
     if(enhancing) return;
     enhancing = true;
