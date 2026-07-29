@@ -1,4 +1,4 @@
-const CACHE="videokeph-redesign-v9-queue-fix";
+const CACHE="videokeph-redesign-v10-queue-stable";
 const ASSETS=["/","/index.html","/manifest.webmanifest","/icon.svg","/verified-codes.js","/sorting-priority.js","/redesign.css","/redesign.js","/queue-fix.js"];
 
 self.addEventListener("install",event=>{
@@ -15,11 +15,11 @@ async function injectProductionAssets(request){
   const type=response.headers.get("content-type")||"";
   if(!type.includes("text/html"))return response;
   let html=await response.text();
-  if(!html.includes("/redesign.css")) html=html.replace("</head>",'<link rel="stylesheet" href="/redesign.css"></head>');
+  if(!html.includes("/redesign.css")) html=html.replace("</head>",'<link rel="stylesheet" href="/redesign.css?v=10"></head>');
   const scripts=[];
-  if(!html.includes("/sorting-priority.js")) scripts.push('<script src="/sorting-priority.js"></script>');
-  if(!html.includes("/redesign.js")) scripts.push('<script src="/redesign.js"></script>');
-  if(!html.includes("/queue-fix.js")) scripts.push('<script src="/queue-fix.js"></script>');
+  if(!html.includes("/sorting-priority.js")) scripts.push('<script src="/sorting-priority.js?v=10"></script>');
+  if(!html.includes("/redesign.js")) scripts.push('<script src="/redesign.js?v=10"></script>');
+  if(!html.includes("/queue-fix.js")) scripts.push('<script src="/queue-fix.js?v=10"></script>');
   if(scripts.length) html=html.replace("</body>",scripts.join("")+"</body>");
   const headers=new Headers(response.headers);
   headers.set("cache-control","no-store, max-age=0");
