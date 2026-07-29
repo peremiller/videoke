@@ -1,5 +1,6 @@
 (() => {
   const CODE_FILTER = "codes";
+  let enhancing = false;
 
   function text(el){ return (el?.textContent || "").trim().toLowerCase(); }
 
@@ -15,13 +16,14 @@
     const grid = document.querySelector(".song-grid");
     if(!grid) return;
     const cards = [...grid.children].filter(el => el.classList.contains("song"));
-    cards.sort((a,b) => {
+    const sorted = [...cards].sort((a,b) => {
       const ac = classifyCard(a), bc = classifyCard(b);
       if(ac.coded !== bc.coded) return ac.coded ? -1 : 1;
       if(ac.trending !== bc.trending) return ac.trending ? -1 : 1;
       return text(a.querySelector(".title")).localeCompare(text(b.querySelector(".title")));
     });
-    cards.forEach(card => grid.appendChild(card));
+    const changed = sorted.some((card,index) => card !== cards[index]);
+    if(changed) sorted.forEach(card => grid.appendChild(card));
   }
 
   function applyCodesFilter(active){
@@ -29,9 +31,9 @@
     if(!grid) return;
     [...grid.children].forEach(card => {
       if(!card.classList.contains("song")) return;
-      card.style.display = !active || classifyCard(card).coded ? "" : "none";
+      card.hidden = active && !classifyCard(card).coded;
     });
-    const visible = [...grid.children].filter(card => card.classList.contains("song") && card.style.display !== "none").length;
+    const visible = [...grid.children].filter(card => card.classList.contains("song") && !card.hidden).length;
     const count = document.querySelector(".sectionbar .muted");
     if(count && active) count.textContent = `${visible} result${visible===1?"":"s"}`;
   }
@@ -43,7 +45,8 @@
     button.className = "chip codes-only-chip";
     button.dataset.cat = CODE_FILTER;
     button.textContent = "🔢 Songs with codes";
-    button.addEventListener("click", () => {
+    button.addEventListener("click", event => {
+      event.preventDefault();
       chips.querySelectorAll(".chip").forEach(chip => chip.classList.remove("on"));
       button.classList.add("on");
       applyCodesFilter(true);
@@ -54,14 +57,25 @@
   }
 
   function enhance(){
+    if(enhancing) return;
+    enhancing = true;
     document.documentElement.classList.add("videoke-redesign");
     ensureCodeFilter();
     reorderCards();
+    requestAnimationFrame(() => { enhancing = false; });
   }
 
   const main = document.getElementById("main");
   if(main){
-    new MutationObserver(() => requestAnimationFrame(enhance)).observe(main,{childList:true,subtree:true});
+    let scheduled = false;
+    new MutationObserver(() => {
+      if(scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        enhance();
+      });
+    }).observe(main,{childList:true,subtree:true});
   }
   addEventListener("DOMContentLoaded", enhance, {once:true});
   setTimeout(enhance, 250);
