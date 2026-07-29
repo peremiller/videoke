@@ -1,5 +1,4 @@
 (() => {
-  const KEY = "videokeph.multibrand.v1";
   const VERIFIED = {
     "12001": {
       platinum: {
@@ -35,32 +34,58 @@
     }
   };
 
-  let state;
-  try {
-    state = JSON.parse(localStorage.getItem(KEY) || "{}");
-  } catch {
-    state = {};
-  }
+  const mergeCodes = key => {
+    let state = {};
+    try {
+      state = JSON.parse(localStorage.getItem(key) || "{}");
+    } catch {
+      state = {};
+    }
+    state.codes = state.codes && typeof state.codes === "object" ? state.codes : {};
+    for (const [songCode, brands] of Object.entries(VERIFIED)) {
+      state.codes[songCode] = { ...(state.codes[songCode] || {}), ...brands };
+    }
+    localStorage.setItem(key, JSON.stringify(state));
+  };
 
-  state.codes = state.codes && typeof state.codes === "object" ? state.codes : {};
-  let changed = false;
+  mergeCodes("videokeph.multibrand.v1");
+  mergeCodes("videokeph.unified.v1");
 
-  for (const [songCode, brands] of Object.entries(VERIFIED)) {
-    state.codes[songCode] = state.codes[songCode] || {};
-    for (const [brand, entry] of Object.entries(brands)) {
-      const current = state.codes[songCode][brand];
-      if (!current || current.code !== entry.code || current.model !== entry.model) {
-        state.codes[songCode][brand] = entry;
-        changed = true;
+  const applyCompactHero = () => {
+    if (document.getElementById("videokeph-compact-hero")) return;
+    const style = document.createElement("style");
+    style.id = "videokeph-compact-hero";
+    style.textContent = `
+      main{padding-top:16px!important}
+      .hero{grid-template-columns:minmax(0,1fr) 320px!important;gap:12px!important;margin-bottom:12px!important}
+      .hero-main{padding:20px 24px!important;min-height:0!important}
+      .hero-main:after{width:180px!important;height:180px!important;right:-70px!important;top:-80px!important}
+      .hero h2,.hero-main h2{font-size:clamp(28px,3.2vw,46px)!important;line-height:1!important;margin:6px 0 8px!important;letter-spacing:-1.8px!important}
+      .hero p,.hero-main p{font-size:13px!important;line-height:1.45!important;margin:0!important;max-width:760px!important}
+      .hero .actions{margin-top:12px!important}
+      .hero .btn{padding:9px 12px!important;font-size:12px!important}
+      .stats{padding:12px!important;gap:8px!important}
+      .stat{padding:11px 12px!important;border-radius:14px!important}
+      .stat strong{font-size:22px!important;line-height:1!important}
+      .stat span{font-size:10px!important}
+      .toolbar{margin-top:0!important}
+      @media(max-width:820px){
+        .hero{grid-template-columns:1fr!important}
+        .stats{grid-template-columns:repeat(4,1fr)!important}
       }
-    }
-  }
+      @media(max-width:600px){
+        main{padding-top:12px!important}
+        .hero-main{padding:18px!important}
+        .hero .actions{display:none!important}
+        .stats{grid-template-columns:repeat(2,1fr)!important}
+      }
+    `;
+    document.head.appendChild(style);
+  };
 
-  if (changed) {
-    localStorage.setItem(KEY, JSON.stringify(state));
-    if (!sessionStorage.getItem("videokeph.verified-codes.loaded")) {
-      sessionStorage.setItem("videokeph.verified-codes.loaded", "1");
-      location.reload();
-    }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyCompactHero, { once: true });
+  } else {
+    applyCompactHero();
   }
 })();
