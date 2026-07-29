@@ -1,4 +1,5 @@
 (() => {
+  const KEY = "videokeph.unified.v1";
   const VERIFIED = {
     "12001": {
       platinum: {
@@ -34,58 +35,54 @@
     }
   };
 
-  const mergeCodes = key => {
-    let state = {};
-    try {
-      state = JSON.parse(localStorage.getItem(key) || "{}");
-    } catch {
-      state = {};
-    }
-    state.codes = state.codes && typeof state.codes === "object" ? state.codes : {};
-    for (const [songCode, brands] of Object.entries(VERIFIED)) {
-      state.codes[songCode] = { ...(state.codes[songCode] || {}), ...brands };
-    }
-    localStorage.setItem(key, JSON.stringify(state));
-  };
-
-  mergeCodes("videokeph.multibrand.v1");
-  mergeCodes("videokeph.unified.v1");
-
-  const applyCompactHero = () => {
-    if (document.getElementById("videokeph-compact-hero")) return;
-    const style = document.createElement("style");
-    style.id = "videokeph-compact-hero";
-    style.textContent = `
-      main{padding-top:16px!important}
-      .hero{grid-template-columns:minmax(0,1fr) 320px!important;gap:12px!important;margin-bottom:12px!important}
-      .hero-main{padding:20px 24px!important;min-height:0!important}
-      .hero-main:after{width:180px!important;height:180px!important;right:-70px!important;top:-80px!important}
-      .hero h2,.hero-main h2{font-size:clamp(28px,3.2vw,46px)!important;line-height:1!important;margin:6px 0 8px!important;letter-spacing:-1.8px!important}
-      .hero p,.hero-main p{font-size:13px!important;line-height:1.45!important;margin:0!important;max-width:760px!important}
-      .hero .actions{margin-top:12px!important}
-      .hero .btn{padding:9px 12px!important;font-size:12px!important}
-      .stats{padding:12px!important;gap:8px!important}
-      .stat{padding:11px 12px!important;border-radius:14px!important}
-      .stat strong{font-size:22px!important;line-height:1!important}
-      .stat span{font-size:10px!important}
-      .toolbar{margin-top:0!important}
-      @media(max-width:820px){
-        .hero{grid-template-columns:1fr!important}
-        .stats{grid-template-columns:repeat(4,1fr)!important}
-      }
-      @media(max-width:600px){
-        main{padding-top:12px!important}
-        .hero-main{padding:18px!important}
-        .hero .actions{display:none!important}
-        .stats{grid-template-columns:repeat(2,1fr)!important}
-      }
-    `;
-    document.head.appendChild(style);
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyCompactHero, { once: true });
-  } else {
-    applyCompactHero();
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+  } catch {
+    saved = {};
   }
+
+  saved.codes = saved.codes && typeof saved.codes === "object" ? saved.codes : {};
+  for (const [songCode, brands] of Object.entries(VERIFIED)) {
+    saved.codes[songCode] = { ...brands, ...(saved.codes[songCode] || {}) };
+  }
+  localStorage.setItem(KEY, JSON.stringify(saved));
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .vendor{position:relative;min-height:74px;background:linear-gradient(145deg,#142944,#0b1b31);border-color:#57e8ff66;box-shadow:inset 0 0 0 1px #57e8ff12}
+    .vendor b{color:#b8c8db;font-size:10px}
+    .vendor span{font-size:20px!important;line-height:1.15;color:#7cecff!important;overflow:visible!important;text-overflow:clip!important}
+    .vendor small{display:block;margin-top:6px;color:#91a5bd;font-size:10px;line-height:1.25}
+    .badge.code-ready{background:#5ce1a518;border-color:#5ce1a54d;color:#8ff0c5}
+  `;
+  document.head.appendChild(style);
+
+  if (typeof CATS !== "undefined") CATS.codes = "🔢 Songs with codes";
+
+  if (typeof songRow === "function") {
+    songRow = function(s) {
+      const vendors = Object.entries(BRANDS).flatMap(([k, n]) => {
+        const v = vendorData(s, k);
+        return v ? [`<div class="vendor" title="${esc(v.source || v.model || "Verified catalog match")}"><b>${n}</b><span>${esc(v.code)}</span><small>${esc(v.model || "Verified catalog")}</small></div>`] : [];
+      }).join("");
+      return `<article class="song"><div class="song-top"><div class="appcode">${s.code}</div><div class="meta"><div class="title">${esc(s.title)}</div><div class="artist">${esc(s.artist)} · ${s.year} · ${s.ukc}</div><div class="badges">${s.cat === "hits" ? '<span class="badge trend">🔥 Trending</span>' : ""}${hasCodes(s) ? '<span class="badge code-ready">🔢 Code available</span>' : ""}</div></div><button class="btn pink" data-res="${s.code}">Queue</button></div>${vendors ? `<div class="codes">${vendors}</div>` : ""}<div class="song-actions"><button class="fav ${state.favs.includes(s.code) ? "on" : ""}" data-fav="${s.code}">★ Favorite</button><button class="btn ghost" data-edit="${s.code}">＋ Machine code</button></div></article>`;
+    };
+  }
+
+  if (typeof book === "function") {
+    book = function() {
+      let list = SONGS.filter(s => {
+        if (filter === "fav" && !state.favs.includes(s.code)) return false;
+        if (filter === "codes" && !hasCodes(s)) return false;
+        if (!["all", "fav", "codes"].includes(filter) && s.cat !== filter) return false;
+        const q = query.trim().toLowerCase();
+        return !q || searchable(s).includes(q);
+      });
+      list.sort(smartCompare);
+      return hero() + `<div class="toolbar"><input id="search" class="search" placeholder="Search title, artist, UKC, or machine code" value="${esc(query)}"><select id="sort" class="select"><option value="title" ${sort === "title" ? "selected" : ""}>Sort rest: Title</option><option value="year" ${sort === "year" ? "selected" : ""}>Sort rest: Newest</option><option value="trending" ${sort === "trending" ? "selected" : ""}>Sort rest: Popularity</option></select><button class="btn ghost" data-clear>Clear</button></div><div class="chips">${Object.entries(CATS).map(([k, v]) => `<button class="chip ${filter === k ? "on" : ""}" data-cat="${k}">${v}</button>`).join("")}</div><div class="sectionbar"><div><h3>${CATS[filter]}</h3><span class="muted">${list.length} result${list.length === 1 ? "" : "s"}</span></div><span class="muted">${filter === "codes" ? "Showing only songs with verified machine codes" : filter === "all" ? "Trending first · coded songs next · then the rest" : "Verified machine codes are displayed below each matching song"}</span></div><div class="song-grid">${list.map(songRow).join("") || '<div class="empty">No songs found.</div>'}</div>`;
+    };
+  }
+
+  if (typeof render === "function") render();
 })();
