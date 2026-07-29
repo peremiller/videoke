@@ -1,0 +1,3 @@
+Production deployment trigger
+Commit includes hiding unverified karaoke brand/code cards.
+Triggered: 2026-07-29 Asia/Manila
