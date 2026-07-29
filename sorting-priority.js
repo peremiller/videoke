@@ -1,10 +1,10 @@
 (() => {
-  const originalBaseCompare = window.baseCompare;
+  const originalBaseCompare = baseCompare;
 
-  window.smartCompare = function smartCompare(a, b) {
-    if (window.filter === "all") {
-      const aHasCode = window.hasCodes(a);
-      const bHasCode = window.hasCodes(b);
+  smartCompare = function smartCompare(a, b) {
+    if (filter === "all") {
+      const aHasCode = hasCodes(a);
+      const bHasCode = hasCodes(b);
       if (aHasCode !== bHasCode) return aHasCode ? -1 : 1;
 
       const aTrending = a.cat === "hits";
@@ -15,13 +15,13 @@
     return originalBaseCompare(a, b);
   };
 
-  const originalBook = window.book;
-  window.book = function bookWithPriorityLabel() {
+  const originalBook = book;
+  book = function bookWithPriorityLabel() {
     return originalBook().replace(
       "Trending first · coded songs next · then the rest",
       "Coded songs first · trending next · then the rest"
     );
   };
 
-  if (typeof window.render === "function") window.render();
+  render();
 })();
