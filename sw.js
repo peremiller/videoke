@@ -1,5 +1,5 @@
-const CACHE="videokeph-redesign-v8";
-const ASSETS=["/","/index.html","/manifest.webmanifest","/icon.svg","/verified-codes.js","/sorting-priority.js","/redesign.css","/redesign.js"];
+const CACHE="videokeph-redesign-v9-queue-fix";
+const ASSETS=["/","/index.html","/manifest.webmanifest","/icon.svg","/verified-codes.js","/sorting-priority.js","/redesign.css","/redesign.js","/queue-fix.js"];
 
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
@@ -19,6 +19,7 @@ async function injectProductionAssets(request){
   const scripts=[];
   if(!html.includes("/sorting-priority.js")) scripts.push('<script src="/sorting-priority.js"></script>');
   if(!html.includes("/redesign.js")) scripts.push('<script src="/redesign.js"></script>');
+  if(!html.includes("/queue-fix.js")) scripts.push('<script src="/queue-fix.js"></script>');
   if(scripts.length) html=html.replace("</body>",scripts.join("")+"</body>");
   const headers=new Headers(response.headers);
   headers.set("cache-control","no-store, max-age=0");
