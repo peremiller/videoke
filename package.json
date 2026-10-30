@@ -1,0 +1,10 @@
+{
+  "name": "videoke",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/prepare-offline-static.mjs && node scripts/offline/build.mjs --dir dist --name \"VideokePH\" --spa --limits \"Song browsing, queue and favorites are saved locally. Suno and other remote music require internet.\"",
+    "test:offline": "node --test scripts/offline/offline.test.mjs scripts/offline/client.test.mjs"
+  }
+}
