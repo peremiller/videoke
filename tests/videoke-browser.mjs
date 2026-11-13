@@ -49,6 +49,7 @@ try{
   assert.match(await page.evaluate(()=>localStorage.getItem("videokeph.unified.v1")),/Sample singer/);
   await page.reload();
   await page.locator('[data-tab="queue"]').click();
+  await page.locator(".qitem").first().waitFor({state:"visible"});
   assert.ok(await page.locator(".qitem").count()>0,"queue persisted");
   await page.evaluate(()=>localStorage.setItem("videokeph.unified.v1","{corrupt-original"));
   await page.reload();
