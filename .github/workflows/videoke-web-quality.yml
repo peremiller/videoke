@@ -1,0 +1,28 @@
+name: VideokePH web quality
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Static and offline regressions
+        run: |
+          node --test tests/videoke-quality.test.mjs
+          npm run test:offline
+          npm run build
+      - name: Browser dependencies
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Real Chromium keyboard, route, storage and viewport tests
+        run: node tests/videoke-browser.mjs
