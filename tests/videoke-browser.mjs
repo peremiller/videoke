@@ -51,6 +51,18 @@ try{
   await page.locator('[data-tab="queue"]').click();
   await page.locator(".qitem").first().waitFor({state:"visible"});
   assert.ok(await page.locator(".qitem").count()>0,"queue persisted");
+  await page.locator('[data-tab="book"]').click();
+  await page.locator('[data-edit="12001"]').waitFor({state:"visible"});
+  await page.evaluate(()=>{
+    const key="videokeph.unified.v1";
+    const saved=JSON.parse(localStorage.getItem(key));
+    saved.codes["12001"]={magic:{code:"56789",model:"User legacy model"}};
+    localStorage.setItem(key,JSON.stringify(saved));
+  });
+  await page.reload();
+  const mergedCodes=await page.evaluate(()=>state.codes["12001"]);
+  assert.equal(mergedCodes.magic.code,"56789","user-added machine code preserved");
+  assert.equal(mergedCodes.platinum.code,"1426","published reference survives old single-brand saved data");
   await page.evaluate(()=>localStorage.setItem("videokeph.unified.v1","{corrupt-original"));
   await page.reload();
   assert.equal(await page.locator("#storageNotice").isVisible(),true);
