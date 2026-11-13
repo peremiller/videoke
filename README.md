@@ -1,46 +1,42 @@
 # VideokePH 🎤 Kanta Na!
 
-A single-file videoke / karaoke machine for Filipino sing-along nights — styled like the
-real coin-op units, complete with a 5-digit song-code remote, singing queue, and the
-classic (generous) scoring screen.
+A browser-based Filipino videoke songbook, saved singing queue and machine-code reference directory.
 
-**Live:** https://videoke-six.vercel.app
+**Published URL listed for this repository:** https://videoke-six.vercel.app
+**Release verification:** confirm the owning deployment and public browser before treating a successful GitHub status as a published update.
 
-## Features
+## Implemented features
 
-- **127-song songbook (as of July 2026)** across 7 categories:
-  🔥 2025–26 Hits (BINI, SB19, XONARA, dwta, Cup of Joe, Dionela, Maki, Lola Amour) ·
-  💜 P-Pop · 🎙 OPM Classics ("Kung Sakali", "Kung Ako Na Lang Sana", "Anak") ·
-  💘 Love Songs · 🎸 Band/Rock (Eraserheads, Aegis, Rivermaya) ·
-  🎉 Party/Novelty · 🌏 English staples
-- **Videoke remote** — punch a 5-digit code (e.g. `12001` = Anak) on a number pad with a
-  green LED display, key beeps, and live song matching
-- **Singing queue** — reserve songs with singer names (recent singers become quick chips),
-  reorder, skip, Now Playing stage card
-- **Mic scoring** — Web Audio measures how much you actually sang (76–100); falls back to
-  "judge's discretion" 80–99 if the mic is unavailable. Score reveal with fanfare,
-  confetti, and Taglish verdicts
-- **🏆 Hall of Fame** — best score per singer, performance history, JSON export/import
-- **YouTube karaoke** — one tap opens a karaoke search for the current song's backing track
+- Search and browse a curated set of OPM, P-Pop, AJ Originals, bands, party and English song titles. The song count is computed from the bundled catalog rather than promised as a live count.
+- Filter, sort, favorite, and reserve songs for a local queue. Singer names, favorites, queue and counter survive reloads when browser storage is available.
+- Look up machine/songbook code references and save custom brand/model entries locally. **Custom entries are not independently verified** and must be checked against the exact machine catalog.
+- Navigate directly to `/#book`, `/#queue`, and `/#codes`; Back, Forward and reload retain the selected section.
+- Offline packaging preserves the static interface and existing local data; external destinations such as AJ Originals on Suno require internet.
 
-## Tech
+The current checked-in interface does **not** implement microphone scoring, an on-screen coin-operated remote, music playback or a Hall of Fame. A local coin counter is demonstrative and does not collect payments.
 
-One self-contained `index.html` — vanilla JS, no build step, no runtime dependencies.
-State persists in `localStorage` (`videokeph.v1`). Sounds are synthesized with the
-Web Audio API; scoring uses `getUserMedia` + an analyser node (RMS activity).
+## Storage and privacy
 
-## Run locally
+Browser-local workspace key: `videokeph.unified.v1`. If data is malformed or browser storage is unavailable, the application displays an error and refuses to overwrite the existing saved record. No song queue or singer information is submitted to a backend by this static interface.
 
-Serve the folder with any static server, e.g.:
+## Development and checks
+
+No runtime framework is required. Serve the repository through a local static server:
 
 ```bash
 python3 -m http.server 4725 --directory .
 ```
 
-Then open http://localhost:4725.
-
-## Deploy
+Browse http://localhost:4725. For repository-provided checks:
 
 ```bash
-vercel deploy --prod
+node --test tests/videoke-quality.test.mjs
+npm run test:offline
+npm run build
 ```
+
+The web-quality GitHub Actions workflow additionally installs Chromium and checks responsive layouts, keyboard navigation, hash deep-links and local-data preservation. It is source CI, **not** automatic certification of the deployed public URL.
+
+## Deployment
+
+The existing Vercel deployment is configured in `vercel.json`. Only its authorized owner should deploy or change settings. The existing GitHub Pages workflow requires GitHub Pages to be enabled/configured by a repository owner; a failing Pages action does not imply that Vercel is also failing.
