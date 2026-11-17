@@ -73,6 +73,8 @@ try{
     const raw=JSON.stringify(malformed);
     await page.evaluate(value=>localStorage.setItem("videokeph.unified.v1",value),raw);
     await page.goto(address+"/#queue");
+    // A hash-only navigation does not reload the document or re-read localStorage.
+    await page.reload();
     assert.equal(await page.locator("#storageNotice").isVisible(),true,"invalid nested record must warn");
     await page.locator("#coinBtn").click();
     assert.equal(await page.evaluate(()=>localStorage.getItem("videokeph.unified.v1")),raw,"invalid nested record must not be overwritten");
