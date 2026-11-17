@@ -63,6 +63,20 @@ try{
   const mergedCodes=await page.evaluate(()=>state.codes["12001"]);
   assert.equal(mergedCodes.magic.code,"56789","user-added machine code preserved");
   assert.equal(mergedCodes.platinum.code,"1426","published reference survives old single-brand saved data");
+  // Saved payloads with malformed nested values must be preserved byte-for-byte.
+  for(const malformed of [
+    {queue:[null],favs:[],coins:1,codes:{}},
+    {queue:[],favs:"not-an-array",coins:1,codes:{}},
+    {queue:[],favs:[],coins:-2,codes:{}},
+    {queue:[],favs:[],coins:0,codes:[]}
+  ]){
+    const raw=JSON.stringify(malformed);
+    await page.evaluate(value=>localStorage.setItem("videokeph.unified.v1",value),raw);
+    await page.goto(address+"/#queue");
+    assert.equal(await page.locator("#storageNotice").isVisible(),true,"invalid nested record must warn");
+    await page.locator("#coinBtn").click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem("videokeph.unified.v1")),raw,"invalid nested record must not be overwritten");
+  }
   await page.evaluate(()=>localStorage.setItem("videokeph.unified.v1","{corrupt-original"));
   await page.reload();
   assert.equal(await page.locator("#storageNotice").isVisible(),true);
