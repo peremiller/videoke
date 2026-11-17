@@ -44,7 +44,16 @@ const KEY="videokeph.unified.v1", $=id=>document.getElementById(id), esc=x=>Stri
 let state={queue:[],favs:[],coins:0,codes:{}},storageStatus="ready";
 try{
   const raw=localStorage.getItem(KEY);
-  if(raw!==null){const parsed=JSON.parse(raw);if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))throw Error("Invalid saved workspace");state={...state,...parsed}}
+  if(raw!==null){
+    const parsed=JSON.parse(raw);
+    if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))throw Error("Invalid saved workspace");
+    // Reject malformed nested records instead of silently discarding or rewriting them.
+    if(("queue" in parsed&&(!Array.isArray(parsed.queue)||parsed.queue.some(item=>!item||typeof item!=="object"||Array.isArray(item))))||
+       ("favs" in parsed&&(!Array.isArray(parsed.favs)||parsed.favs.some(item=>typeof item!=="string")))||
+       ("coins" in parsed&&(!Number.isSafeInteger(parsed.coins)||parsed.coins<0))||
+       ("codes" in parsed&&(!parsed.codes||typeof parsed.codes!=="object"||Array.isArray(parsed.codes))))throw Error("Invalid saved workspace fields");
+    state={...state,...parsed}
+  }
 }catch{storageStatus="read_or_parse_failed"}
 state.queue=Array.isArray(state.queue)?state.queue:[];
 state.favs=Array.isArray(state.favs)?state.favs:[];
