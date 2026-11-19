@@ -27,6 +27,8 @@ try{
     await page.waitForSelector(".song");
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.ok(overflow<=2,"horizontal overflow "+width+" "+colorScheme+": "+overflow);
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(()=>document.activeElement.classList.contains("skip-link")),true,"skip link keyboard");
     const allSongs = await page.locator(".song").count();
     await page.locator('[data-cat="codes"]').click();
     assert.equal(await page.locator('[data-cat="codes"]').getAttribute("aria-pressed"),"true","code filter exposes selected state");
@@ -35,8 +37,6 @@ try{
     assert.equal(await page.locator(".song:not(:has(.badge))").count(),0,"uncoded songs excluded");
     await page.locator('[data-cat="all"]').click();
     assert.equal(await page.locator(".song").count(),allSongs,"All restores unfiltered songs");
-    await page.keyboard.press("Tab");
-    assert.equal(await page.evaluate(()=>document.activeElement.classList.contains("skip-link")),true,"skip link keyboard");
     await page.locator('[data-tab="queue"]').click();
     assert.equal(new URL(page.url()).hash,"#queue");
     await page.reload();
