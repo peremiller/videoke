@@ -29,6 +29,23 @@ try{
     assert.ok(overflow<=2,"horizontal overflow "+width+" "+colorScheme+": "+overflow);
     await page.keyboard.press("Tab");
     assert.equal(await page.evaluate(()=>document.activeElement.classList.contains("skip-link")),true,"skip link keyboard");
+    const allSongs = await page.locator(".song").count();
+    await page.locator('[data-cat="codes"]').click();
+    assert.equal(await page.locator('[data-cat="codes"]').evaluate(el=>el===document.activeElement),true,"filter keeps keyboard focus after rerender");
+    assert.equal(await page.locator('[data-cat="codes"]').getAttribute("aria-pressed"),"true","code filter exposes selected state");
+    const codeSongs = await page.locator(".song").count();
+    assert.ok(codeSongs>0&&codeSongs<=allSongs,"code filter shows coded songs across categories");
+    assert.equal(await page.locator(".song:not(:has(.badge))").count(),0,"uncoded songs excluded");
+    await page.locator('[data-cat="all"]').click();
+    assert.equal(await page.locator('[data-cat="all"]').evaluate(el=>el===document.activeElement),true,"reset filter keeps keyboard focus");
+    assert.equal(await page.locator(".song").count(),allSongs,"All restores unfiltered songs");
+    await page.locator("#sort").selectOption("year");
+    assert.equal(await page.locator("#sort").evaluate(el=>el===document.activeElement),true,"sort keeps keyboard focus");
+    await page.locator("#search").fill("love");
+    await page.locator("#search").evaluate(el=>el.setSelectionRange(2,2));
+    await page.keyboard.type("x");
+    assert.equal(await page.locator("#search").inputValue(),"loxve","typing within search preserves caret position");
+    assert.equal(await page.locator("#search").evaluate(el=>el.selectionStart),3,"search caret survives rerender");
     await page.locator('[data-tab="queue"]').click();
     assert.equal(new URL(page.url()).hash,"#queue");
     await page.reload();
@@ -63,6 +80,22 @@ try{
   const mergedCodes=await page.evaluate(()=>state.codes["12001"]);
   assert.equal(mergedCodes.magic.code,"56789","user-added machine code preserved");
   assert.equal(mergedCodes.platinum.code,"1426","published reference survives old single-brand saved data");
+  // Saved payloads with malformed nested values must be preserved byte-for-byte.
+  for(const malformed of [
+    {queue:[null],favs:[],coins:1,codes:{}},
+    {queue:[],favs:"not-an-array",coins:1,codes:{}},
+    {queue:[],favs:[],coins:-2,codes:{}},
+    {queue:[],favs:[],coins:0,codes:[]}
+  ]){
+    const raw=JSON.stringify(malformed);
+    await page.evaluate(value=>localStorage.setItem("videokeph.unified.v1",value),raw);
+    await page.goto(address+"/#queue");
+    // A hash-only navigation does not reload the document or re-read localStorage.
+    await page.reload();
+    assert.equal(await page.locator("#storageNotice").isVisible(),true,"invalid nested record must warn");
+    await page.locator("#coinBtn").click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem("videokeph.unified.v1")),raw,"invalid nested record must not be overwritten");
+  }
   await page.evaluate(()=>localStorage.setItem("videokeph.unified.v1","{corrupt-original"));
   await page.reload();
   assert.equal(await page.locator("#storageNotice").isVisible(),true);
