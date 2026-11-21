@@ -51,7 +51,9 @@ try{
     if(("queue" in parsed&&(!Array.isArray(parsed.queue)||parsed.queue.some(item=>!item||typeof item!=="object"||Array.isArray(item))))||
        ("favs" in parsed&&(!Array.isArray(parsed.favs)||parsed.favs.some(item=>typeof item!=="string")))||
        ("coins" in parsed&&(!Number.isSafeInteger(parsed.coins)||parsed.coins<0))||
-       ("codes" in parsed&&(!parsed.codes||typeof parsed.codes!=="object"||Array.isArray(parsed.codes))))throw Error("Invalid saved workspace fields");
+       ("codes" in parsed&&(!parsed.codes||typeof parsed.codes!=="object"||Array.isArray(parsed.codes)||
+       Object.values(parsed.codes).some(brands=>!brands||typeof brands!=="object"||Array.isArray(brands)||
+         Object.values(brands).some(record=>!record||typeof record!=="object"||Array.isArray(record)||typeof record.code!=="string"||typeof record.model!=="string")))))throw Error("Invalid saved workspace fields");
     state={...state,...parsed}
   }
 }catch{storageStatus="read_or_parse_failed"}
