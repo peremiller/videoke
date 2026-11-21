@@ -85,7 +85,10 @@ try{
     {queue:[null],favs:[],coins:1,codes:{}},
     {queue:[],favs:"not-an-array",coins:1,codes:{}},
     {queue:[],favs:[],coins:-2,codes:{}},
-    {queue:[],favs:[],coins:0,codes:[]}
+    {queue:[],favs:[],coins:0,codes:[]},
+    {queue:[],favs:[],coins:0,codes:{"12001":"damaged-brand-map"}},
+    {queue:[],favs:[],coins:0,codes:{"12001":{magic:null}}},
+    {queue:[],favs:[],coins:0,codes:{"12001":{magic:{code:["bad"],model:"Legacy"}}}}
   ]){
     const raw=JSON.stringify(malformed);
     await page.evaluate(value=>localStorage.setItem("videokeph.unified.v1",value),raw);
