@@ -73,6 +73,7 @@ try{
   await page.locator("[data-res]").nth(1).click();
   await page.locator("#qAdd").click();
   await page.locator('[data-tab="queue"]').click();
+  await page.locator("[data-del]").first().waitFor({state:"visible"});
   assert.equal(await page.locator("[data-del]").count(),2,"two queued songs for removal test");
   await page.locator("[data-del]").first().focus();
   await page.keyboard.press("Enter");
