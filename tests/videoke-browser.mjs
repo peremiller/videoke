@@ -68,6 +68,20 @@ try{
   await page.locator('[data-tab="queue"]').click();
   await page.locator(".qitem").first().waitFor({state:"visible"});
   assert.ok(await page.locator(".qitem").count()>0,"queue persisted");
+  // Removing a queued item must not strand keyboard focus on a detached button.
+  await page.locator('[data-tab="book"]').click();
+  await page.locator("[data-res]").nth(1).click();
+  await page.locator("#qAdd").click();
+  await page.locator('[data-tab="queue"]').click();
+  assert.equal(await page.locator("[data-del]").count(),2,"two queued songs for removal test");
+  await page.locator("[data-del]").first().focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("[data-del]").count(),1,"remove only the selected song");
+  assert.equal(await page.locator("[data-del]").first().evaluate(el=>el===document.activeElement),true,"remaining Remove button keeps focus");
+  await page.locator("[data-clearq]").focus();
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("[data-del]").count(),0,"clear queue preserves empty state");
+  assert.equal(await page.locator('[data-tab="queue"]').evaluate(el=>el===document.activeElement),true,"clear queue restores focus to navigation");
   await page.locator('[data-tab="book"]').click();
   await page.locator('[data-edit="12001"]').waitFor({state:"visible"});
   await page.evaluate(()=>{
