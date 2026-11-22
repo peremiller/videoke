@@ -34,3 +34,9 @@ test("forms are programmatically labelled and queue data escaped",()=>{
 test("existing data, references, songs and offline links retained",()=>{
   for(const key of ["videokeph.unified.v1","const RAW=","const VERIFIED=",'src="/queue-fix.js','src="/redesign.js','src="/sorting-priority.js']) assert.ok(html.includes(key),key);
 });
+
+test("Songs with codes is a native persistent category filter rather than a transient DOM-only chip",()=>{
+  assert.match(html,/CATS=\{all:"All songs",codes:"🔢 Songs with codes"/);
+  assert.match(html,/if\(filter==="codes"&&!hasCodes\(s\)\)return false/);
+  assert.match(html,/\["all","fav","codes"\]\.includes\(filter\)/);
+});
